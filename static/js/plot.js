@@ -233,7 +233,11 @@ function replot_all()
     plot_lines[i].color_angle = i/Object.keys(plot_lines).length * 360;
     replot(plot_lines[i]);
   }
+  /*if(time_flag == 1)time_flag = 0;
+  else time = 0;*/
   time=0;
+  number_flag = 0;
+
 }
 
 var plot_animate = [];
@@ -318,6 +322,8 @@ var phase;
 var vec;
 var vec_animation;
 var three_line;
+var four_line;
+var number_line;
 
 function add_plot_each(phase_index_array, axes, line, width, color, dt, parameter_condition_list, current_param_idx, current_line_vec)
 {
@@ -398,6 +404,45 @@ function add_plot_each(phase_index_array, axes, line, width, color, dt, paramete
         three_line.isLine = true;
         graph_scene.add(three_line);
         line.plot.push(three_line);
+
+	var line_flag = 1;
+	number_line = new THREE.Scene();
+	while(line_flag*2 < current_line_vec.length){
+	  var cylindersGeometry = new THREE.Geometry();
+	  
+	  for(var i=0;i+1<current_line_vec.length;i++){
+	    if(i<line_flag*2){
+	      if(i%2 == 0)continue;
+	    }
+	    if('isPP' in current_line_vec[i+1]){
+	    posBegin = current_line_vec[i];
+	    posEnd = current_line_vec[i+1];
+	    directionVec = posEnd.clone().sub(posBegin);
+	    lineLength = directionVec.length();
+	    directionVec.normalize();
+	    numOfDots = lineLength / dottedLength;
+	    for(var j=1;j+1<num0fDots;j+=2){
+	      addCylinder(
+	        posBegin.clone().add(directionVec.clone().multiplyScalar(j*dottedLength)),
+		posBegin.clone().add(directionVec.clone().multiplyScalar((j+1)*dottedLength))
+              );
+	    }
+	  }
+	  else if(!current_line_vec[i].equals(current_line_vec[i+1])){
+	    addCylinder(current_line_vec[i], curren_line_vec[i+1]);
+	  }
+	}
+
+	four_line = new THREE.Mesh(
+	  cylindersGeometry,
+	  new THREE.MeshBasicMaterial({color:color[current_param_idx]})
+	);
+	four_line.isLine = true;
+	four_line.name = line_flag;
+	number_line.add(four_line);
+	
+	line_flag++;
+      }
 
         animation_line[array] = (current_line_vec_animation);
         animation_line[array].color = (color[current_param_idx]);
@@ -940,6 +985,17 @@ function update_axes(force){
   prev_range = range;
 }
 
+function RPA(){
+  for(i=0;i<graph_scene.children.length-1;i++){
+    if('isLine' in graph_scene.children[i]){
+      if(i<number_line.children.length-1){
+        graph_scene.children[i] = number_line.children[number_flag];
+      }
+    }
+  }
+  number_flag++;
+}
+
 var arr = 0;
 var time_prev = -100;
 function animate(){
@@ -954,6 +1010,7 @@ function animate(){
         }
         if(time>animation_line.maxlen-1){
           time = 0;
+	  number_flag = 0;
         }
         if(time == 0){
           graph_scene.children[i+1].material.color.set(

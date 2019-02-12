@@ -84,6 +84,9 @@ var range = 0;
 var a_line = 1;
 var t_line = 0;
 var last_frame_zoom = 1;
+var time_flag = 0;
+var number_flag=0;
+
 function render() {
   requestAnimationFrame(render);
   graph_controls.update();
@@ -92,6 +95,11 @@ function render() {
   }
   update_axes();
   if(animatable){
+    if(time>0&&time%20==0){
+    /*time_flag = 1;
+    replot_all();*/
+    RPA();
+    }
     animate(); // animating function
     animate_time();
   }else{
