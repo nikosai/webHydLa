@@ -1,0 +1,16 @@
+{
+  "name": "static",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "tsc": "./node_modules/.bin/tsc",
+    "ts-node": "./node_modules/.bin/ts-node"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ts-node": "^8.6.2",
+    "typescript": "^3.8.3"
+  }
+}
