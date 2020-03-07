@@ -4,7 +4,7 @@
 1. 次を実行．  
   Execute a following command.  
     ```
-    /webHydLa/static$ npm install --save-dev typescript ts-node
+    /webHydLa/static$ npm install --save-dev typescript ts-node three @types/jquery
     ```
 1. 確認．  
   Check.  

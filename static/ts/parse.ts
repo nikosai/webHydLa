@@ -504,5 +504,3 @@ console.log(parseValue("Tan[0]").getValue());
 console.log(parseValue("Floor[E]").getValue());
 console.log(parseValue("(t * (-1250) + 125 * p[v, 0, 1] + 613 * (20 * p[ht, 0, 1] + p[v, 0, 1] ^ 2) ^ (1\/2))*(t*(-250)+25*p[v, 0, 1]+97*(20*p[ht, 0, 1]+p[v, 0, 1]^2)^(1\/2))*(-1)\/62500"));
 */
-var n: Vnode = new Constant(Infinity);
-console.log(n.toString());
