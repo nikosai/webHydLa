@@ -1,4 +1,4 @@
-//import * as THREE from 'three';
+// import * as THREE from 'three';
 declare var graph_scene: any;
 declare var plot_settings: any;
 declare var graph_renderer: any;
@@ -6,8 +6,6 @@ declare var graph_camera: any;
 declare var settingsForCurrentHydat: any;
 declare var browser_storage: any;
 declare var parameter_setting: any;
-declare var showToast: any;
-declare var initVariableSelector: any;
 declare var plot_lines: any;
 declare var time: any;
 declare var updateFolder: any;

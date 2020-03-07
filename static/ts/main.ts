@@ -38,7 +38,7 @@ editor.setOptions({
 editor.commands.addCommand({
   name: "runHyLaGI",
   bindKey: { win: "Ctrl-Enter", mac: "Command-Enter" },
-  exec: function (editor) { sendHydLa(); },
+  exec: function (editor: any) { sendHydLa(); },
   readOnly: true
 });
 
@@ -46,8 +46,8 @@ var dat_gui_parameter_folder;
 var dat_gui_variable_folder;
 var dat_gui_parameter_folder_seek;
 
-var first_script_element;
-var dynamic_script_elements = [];
+var first_script_element: any;
+var dynamic_script_elements: any = [];
 
 
 $(document).ready(function () {
@@ -99,17 +99,17 @@ $(document).ready(function () {
 
   var add_line_obj = { add: function () { var line = addNewLine("", "", ""); line.folder.open(); } };
   var controler;
-  var dat_gui = new dat.GUI({ autoPlace: false, load: localStorage });
-  var dat_gui_animate = new dat.GUI({ autoPlace: false, load: localStorage });
-  dat_gui.add(plot_settings, 'plotInterval', 0.01, 1).step(0.001).name('plot interval').onChange(function (value) { replot_all(); savePlotSettings(); });
+  var dat_gui: any = new dat.GUI({ autoPlace: false, load: localStorage });
+  var dat_gui_animate: any = new dat.GUI({ autoPlace: false, load: localStorage });
+  dat_gui.add(plot_settings, 'plotInterval', 0.01, 1).step(0.001).name('plot interval').onChange(function (value: any) { replot_all(); savePlotSettings(); });
   dat_gui.add(plot_settings, 'lineWidth', 1, 10).step(1).name('line width')
-    .onChange(function (value) { replot_all(); savePlotSettings(); });
-  dat_gui.add(plot_settings, 'scaleLabelVisible').name("show scale label").onChange(function (value) { update_axes(true); savePlotSettings(); });
-  dat_gui.add(plot_settings, 'twoDimensional').name("XY-mode").onChange(function (value) { update2DMode(); savePlotSettings(); });
-  dat_gui.add(plot_settings, 'autoRotate').name("auto rotate").onChange(function (value) { updateRotate(); savePlotSettings(); });
+    .onChange(function (value: any) { replot_all(); savePlotSettings(); });
+  dat_gui.add(plot_settings, 'scaleLabelVisible').name("show scale label").onChange(function (value: any) { update_axes(true); savePlotSettings(); });
+  dat_gui.add(plot_settings, 'twoDimensional').name("XY-mode").onChange(function (value: any) { update2DMode(); savePlotSettings(); });
+  dat_gui.add(plot_settings, 'autoRotate').name("auto rotate").onChange(function (value: any) { updateRotate(); savePlotSettings(); });
   dat_gui.addColor(plot_settings, 'backgroundColor').name('background')
-    .onChange(function (value) { setBackgroundColor(value); savePlotSettings();/*render_three_js();i*/ });
-  dat_gui_animate.add(plot_settings, 'animate').name("stop").onChange(function (value) { time_stop(); savePlotSettings(); });
+    .onChange(function (value: any) { setBackgroundColor(value); savePlotSettings();/*render_three_js();i*/ });
+  dat_gui_animate.add(plot_settings, 'animate').name("stop").onChange(function (value: any) { time_stop(); savePlotSettings(); });
   //dat_gui_animate.add(plot_settings, 'seek', 0, 1000).step(1).name('seek').onChange(function(value){seek();savePlotSettings();});
 
   dat_gui.domElement.style['z-index'] = 2;
@@ -126,10 +126,10 @@ $(document).ready(function () {
   dat_gui.add(add_line_obj, 'add').name("add new line");
   dat_gui_variable_folder = dat_gui.addFolder('variables');
 
-  var dat_container = document.getElementById('dat-gui');
+  var dat_container: any = document.getElementById('dat-gui');
   dat_container.appendChild(dat_gui.domElement);
 
-  var dat_container_b = document.getElementById('dat-gui-bottom');
+  var dat_container_b: any = document.getElementById('dat-gui-bottom');
   dat_container_b.style.height = height_area;
   dat_container_b.appendChild(dat_gui_animate.domElement);
 
@@ -309,7 +309,7 @@ function sendHydLa() {
           break;
       }
       server_response = response;
-      var output = document.getElementById("output-initial");
+      var output: any = document.getElementById("output-initial");
       output.innerHTML = "";
       for (var si = 0; si < dynamic_script_elements.length; si++) {
         dynamic_script_elements[si].parentNode.removeChild(dynamic_script_elements[si]);
@@ -347,7 +347,7 @@ function sendHydLa() {
   };
 }
 
-function getEscapedStringForHTML(orig_string) {
+function getEscapedStringForHTML(orig_string: any) {
   return orig_string.replace(/\n/mg, "<br/>").replace(/\s/mg, "&nbsp;");
 }
 
@@ -361,7 +361,7 @@ function killHyLaGI() {
 }
 
 
-function getErrorMessage(sid) {
+function getErrorMessage(sid: any) {
   var form = document.createElement("form");
   form.action = "error.cgi";
   form.method = "post";
@@ -376,19 +376,19 @@ function getErrorMessage(sid) {
 
 /* function to start preloader */
 function startPreloader() {
-  document.getElementById("graph-preloader").classList.remove("hide");
-  document.getElementById("output-preloader").classList.remove("hide");
+  (<any>document.getElementById("graph-preloader")).classList.remove("hide");
+  (<any>document.getElementById("output-preloader")).classList.remove("hide");
 }
 
 /* function called when graph is drawn */
 function stopPreloader() {
-  document.getElementById("graph-preloader").classList.add("hide");
-  document.getElementById("output-preloader").classList.add("hide");
+  (<any>document.getElementById("graph-preloader")).classList.add("hide");
+  (<any>document.getElementById("output-preloader")).classList.add("hide");
 }
 
 
 /* function to enable/disable input field */
-function connecttext(elemID, ischeckded) {
+function connecttext(elemID: any, ischeckded: any) {
   var elm: any = document.getElementById(elemID);
   if (ischeckded == true) {
     elm.disabled = false;
@@ -400,7 +400,7 @@ function connecttext(elemID, ischeckded) {
 }
 
 
-var resizeLoopCount;
+var resizeLoopCount: any;
 
 function startResizingGraphArea() {
   resizeLoopCount = 0;
@@ -416,9 +416,9 @@ function resizeGraphArea() {
 
 /* function to close/open input-pane */
 (function () {
-  var initial_x, initial_width, initial_editor, initial_left, dragging = false;
+  var initial_x: any, initial_width: any, initial_editor: any, initial_left, dragging = false;
 
-  function v_separator_mousedown_handler(e) {
+  function v_separator_mousedown_handler(e: any) {
     initial_x = e.pageX;
     initial_width = $("#left-pane").width();
     initial_left = $("#v-separator").css("left");
@@ -438,7 +438,7 @@ function resizeGraphArea() {
       .mouseup(v_separator_mouseup_handler)
   }
 
-  function v_separator_mousemove_handler(e) {
+  function v_separator_mousemove_handler(e: any) {
     if (!dragging) return;
     var diff = e.pageX - initial_x;
     $("#left-pane").width(initial_width + diff);
@@ -447,7 +447,7 @@ function resizeGraphArea() {
     editor.resize();
   }
 
-  function v_separator_mouseup_handler(e) {
+  function v_separator_mouseup_handler(e: any) {
     dragging = false;
     $("#secretdiv").remove();
   }
@@ -459,10 +459,10 @@ function resizeGraphArea() {
 
 /* function to adjust height of graph-setting-area */
 (function () {
-  var initial_y, initial_height,
+  var initial_y: any, initial_height: any,
     dragging = false;
 
-  function h_separator_mousedown_handler(e) {
+  function h_separator_mousedown_handler(e: any) {
     initial_y = e.pageY;
     initial_height = $("#input-pane").height();
     dragging = true;
@@ -480,7 +480,7 @@ function resizeGraphArea() {
       .mouseup(h_separator_mouseup_handler)
   }
 
-  function h_separator_mousemove_handler(e) {
+  function h_separator_mousemove_handler(e: any) {
     if (!dragging) return;
     var diff = e.pageY - initial_y;
     $("#input-pane").height(initial_height + diff);
@@ -488,7 +488,7 @@ function resizeGraphArea() {
     editor.resize();
   }
 
-  function h_separator_mouseup_handler(e) {
+  function h_separator_mouseup_handler(e: any) {
     dragging = false;
     $("#secretdiv").remove();
   }
@@ -498,8 +498,8 @@ function resizeGraphArea() {
 })();
 
 function toggleInputPane() {
-  var elm = document.getElementById("left-pane");
-  var tgl = document.getElementById("v-toggle-icon");
+  var elm: any = document.getElementById("left-pane");
+  var tgl: any = document.getElementById("v-toggle-icon");
   if (elm.getAttribute("style")) {
     elm.removeAttribute("style");
     tgl.classList.remove("mdi-navigation-chevron-right");
@@ -531,28 +531,28 @@ function saveHydla() {
 }
 
 function loadFile() {
-  var i = document.createElement("input");
+  var i: any = document.createElement("input");
   i.type = "file";
   var event = document.createEvent("MouseEvents");
   event.initMouseEvent(
     "click", true, false, window, 0, 0, 0, 0, 0
     , false, false, false, false, 0, null
   );
-  i.addEventListener("change", function (ev) {
+  i.addEventListener("change", function (ev: any) {
     var input_file = i.files[0];
     var fr: any = new FileReader;
     fr.readAsText(input_file);
     var splitted_strs = input_file.name.split(".");
     var ext = splitted_strs[splitted_strs.length - 1].toLowerCase();
     if (ext == "hydat") {
-      fr.onload = function (evt) {
+      fr.onload = function (evt: any) {
         var input_hydat = JSON.parse(fr.result);
         loadHydat(input_hydat);
       };
     }
     else {
       browser_storage.setItem("hydla_name", input_file.name);
-      fr.onload = function (evt) {
+      fr.onload = function (evt: any) {
         editor.setValue(fr.result);
       };
     }
@@ -618,7 +618,7 @@ function loadKeyBindingFromWebstorage() {
     selector.value = selector.options[selector.selectedIndex].value;
     browser_storage.setItem("key_binding", selector.value);
   }
-  if (selector.value == "") editor.setKeyboardHandler(null);
+  if (selector.value == "") editor.setKeyboardHandler(<any>null);
   else editor.setKeyboardHandler(selector.value);
 }
 
@@ -644,7 +644,7 @@ var settingsForCurrentHydat: any = {};
 
 
 /* function to update variable selector for graph */
-function initVariableSelector(hydat) {
+function initVariableSelector(hydat: any) {
   for (var i in plot_lines) {
     dat_gui_variable_folder.removeFolder(plot_lines[i].folder.name);
   }
@@ -685,7 +685,7 @@ function initVariableSelector(hydat) {
 //TODO: implement this in more elegant way
 setTimeout("resizeGraphRenderer()", 200);
 
-(<any>dat.GUI.prototype).removeFolder = function (name) {
+(<any>dat.GUI.prototype).removeFolder = function (name: any) {
   var folder = this.__folders[name];
   if (!folder) {
     return;
@@ -696,9 +696,9 @@ setTimeout("resizeGraphRenderer()", 200);
   this.onResize();
 }
 
-function showToast(message, duration, classes) {
+function showToast(message: any, duration: any, classes: any) {
   Materialize.toast(message, duration, classes);
-  var toast_container = document.getElementById("toast-container");
+  var toast_container: any = document.getElementById("toast-container");
   var i;
   var MAX_CHILDREN_NUM = 5;
   if (toast_container.children.length > MAX_CHILDREN_NUM) {
@@ -710,13 +710,13 @@ function showToast(message, duration, classes) {
 
 // below are functions added for new UI
 
-var in_graph_area;
+var in_graph_area: any;
 $('#graph-area').hover(
   () => { in_graph_area = true; },
   function () { in_graph_area = false; $('#scroll-message').css("opacity", "0"); }
 );
 
-var timeout;
+var timeout: any;
 $("body").scroll(function () {
   clearTimeout(timeout);
   if (in_graph_area == true) {
@@ -730,13 +730,13 @@ const key_ctr = 17;
 const key_alt = 18;
 const key_meta_l = 91;
 
-window.onkeydown = function (e) {
+window.onkeydown = function (e: any) {
   if (!e) e = window.event;
   if (e.keyCode == key_shift || e.keyCode == key_ctr || e.keyCode == key_alt || e.keyCode == key_meta_l) {
     enableZoom(); $('#scroll-message').css("opacity", "0");
   }
 }
-window.onkeyup = function (e) {
+window.onkeyup = function (e: any) {
   if (!e) e = window.event;
   if (e.keyCode == key_shift || e.keyCode == key_ctr || e.keyCode == key_alt || e.keyCode == key_meta_l) {
     disableZoom();
