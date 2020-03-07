@@ -1,5 +1,4 @@
-type Env = { [x: string]: Vnode; };
-
+// type Env = { [x: string]: Vnode; };
 interface Vnode {
   toString: () => string;
   getValue: (env: Env) => number;
