@@ -1,3 +1,22 @@
+declare var render: any;
+declare var animatable: any;
+declare var resizeGraphRenderer: any;
+declare var loadHydat: any;
+declare var Materialize: any;
+declare var html_mode_check_box: any;
+declare var phase_num: any;
+declare var options_value: any;
+declare var simulation_time: any;
+declare var nd_mode_check_box: any;
+declare var other_options: any;
+declare var timeout_option: any;
+declare var setBackgroundColor: any;
+declare var update_axes: any;
+declare var graph_controls: any
+declare var graph_camera: any;
+declare var theme_selector: any;
+declare var classic_ui: any;
+
 /* ID="editor" な div をエディタにする */
 var editor = ace.edit("editor");
 
@@ -18,9 +37,9 @@ editor.setOptions({
 /* set keybinding */
 editor.commands.addCommand({
   name: "runHyLaGI",
-  bindKey: {win: "Ctrl-Enter", mac: "Command-Enter"},
-  exec: function(editor) { sendHydla(); },
-  readonly: true
+  bindKey: { win: "Ctrl-Enter", mac: "Command-Enter" },
+  exec: function (editor) { sendHydLa(); },
+  readOnly: true
 });
 
 var dat_gui_parameter_folder;
@@ -31,70 +50,68 @@ var first_script_element;
 var dynamic_script_elements = [];
 
 
-$(document).ready(function(){
-  
+$(document).ready(function () {
+
   initScrollZoom();
 
   editor.clearSelection();
   /* initialize materialize components */
-  $('#file-dropdown-button').dropdown({
+  (<any>$('#file-dropdown-button')).dropdown({
     constrain_width: true,
     hover: false,
   });
-  $('.axis-dropdown-button').dropdown({
+  (<any>$('.axis-dropdown-button')).dropdown({
     constrain_width: false,
     hover: false
   });
-  $('.modal-trigger').leanModal();
-  $('ui.tabs').tabs();
+  (<any>$('.modal-trigger')).leanModal();
+  (<any>$('ui.tabs')).tabs();
 
-  $("fix_button").on('change', function(){
+  $("fix_button").on('change', function () {
     replot_all();
   });
-  $("step_button").on('change', function(){
+  $("step_button").on('change', function () {
     replot_all();
   });
 
   loadThemeFromWebstorage();
   loadKeyBindingFromWebstorage();
-  $('select').material_select();
+  (<any>$('select')).material_select();
 
   first_script_element = document.getElementsByTagName('script')[0];
 
   plot_settings = browser_storage.getItem('plot_settings');
-  if(plot_settings == null)
-  {
+  if (plot_settings == null) {
     plot_settings = {};
   }
-  else
-  {
+  else {
     plot_settings = JSON.parse(plot_settings);
   }
 
-  if(plot_settings.plotInterval == undefined)plot_settings.plotInterval = 0.1;
-  if(plot_settings.backgroundColor == undefined)plot_settings.backgroundColor = "#000000";
-  if(plot_settings.lineWidth == undefined)plot_settings.lineWidth = 1;
-  if(plot_settings.scaleLabelVisible == undefined)plot_settings.scaleLabelVisible = true;
-  if(plot_settings.twoDimensional == undefined)plot_settings.twoDimensional = false;
-  if(plot_settings.autoRotate == undefined)plot_settings.autoRotate = false;
-  if(plot_settings.animate == undefined)plot_settings.animate = false;
-  if(plot_settings.seek == undefined)plot_settings.seek = 0;
+  if (plot_settings.plotInterval == undefined) plot_settings.plotInterval = 0.1;
+  if (plot_settings.backgroundColor == undefined) plot_settings.backgroundColor = "#000000";
+  if (plot_settings.lineWidth == undefined) plot_settings.lineWidth = 1;
+  if (plot_settings.scaleLabelVisible == undefined) plot_settings.scaleLabelVisible = true;
+  if (plot_settings.twoDimensional == undefined) plot_settings.twoDimensional = false;
+  if (plot_settings.autoRotate == undefined) plot_settings.autoRotate = false;
+  if (plot_settings.animate == undefined) plot_settings.animate = false;
+  if (plot_settings.seek == undefined) plot_settings.seek = 0;
 
-  var add_line_obj = {add: function(){var line = addNewLine("","",""); line.folder.open();} };
+  var add_line_obj = { add: function () { var line = addNewLine("", "", ""); line.folder.open(); } };
   var controler;
-  dat_gui = new dat.GUI({autoPlace: false, load: localStorage});
-  dat_gui_animate = new dat.GUI({autoPlace: false, load: localStorage});
-  dat_gui.add(plot_settings, 'plotInterval', 0.01, 1).step(0.001).name('plot interval').onChange(function(value){replot_all();savePlotSettings();});
+  var dat_gui = new dat.GUI({ autoPlace: false, load: localStorage });
+  var dat_gui_animate = new dat.GUI({ autoPlace: false, load: localStorage });
+  dat_gui.add(plot_settings, 'plotInterval', 0.01, 1).step(0.001).name('plot interval').onChange(function (value) { replot_all(); savePlotSettings(); });
   dat_gui.add(plot_settings, 'lineWidth', 1, 10).step(1).name('line width')
-    .onChange(function(value){replot_all();savePlotSettings();});
-  dat_gui.add(plot_settings, 'scaleLabelVisible').name("show scale label").onChange(function(value){update_axes(true);savePlotSettings();});
-  dat_gui.add(plot_settings, 'twoDimensional').name("XY-mode").onChange(function(value){update2DMode();savePlotSettings();});
-  dat_gui.add(plot_settings, 'autoRotate').name("auto rotate").onChange(function(value){updateRotate(); savePlotSettings();});
+    .onChange(function (value) { replot_all(); savePlotSettings(); });
+  dat_gui.add(plot_settings, 'scaleLabelVisible').name("show scale label").onChange(function (value) { update_axes(true); savePlotSettings(); });
+  dat_gui.add(plot_settings, 'twoDimensional').name("XY-mode").onChange(function (value) { update2DMode(); savePlotSettings(); });
+  dat_gui.add(plot_settings, 'autoRotate').name("auto rotate").onChange(function (value) { updateRotate(); savePlotSettings(); });
   dat_gui.addColor(plot_settings, 'backgroundColor').name('background')
-    .onChange(function(value){setBackgroundColor(value);savePlotSettings();/*render_three_js();i*/});
-  dat_gui_animate.add(plot_settings, 'animate').name("stop").onChange(function(value){time_stop();savePlotSettings();});
+    .onChange(function (value) { setBackgroundColor(value); savePlotSettings();/*render_three_js();i*/ });
+  dat_gui_animate.add(plot_settings, 'animate').name("stop").onChange(function (value) { time_stop(); savePlotSettings(); });
   //dat_gui_animate.add(plot_settings, 'seek', 0, 1000).step(1).name('seek').onChange(function(value){seek();savePlotSettings();});
-    
+
   dat_gui.domElement.style['z-index'] = 2;
   dat_gui_animate.domElement.style['z-index'] = 3;
   dat_gui_animate.domElement.style['position'] = 'absolute';
@@ -108,7 +125,7 @@ $(document).ready(function(){
   dat_gui_parameter_folder_seek = dat_gui_animate.addFolder('seek');
   dat_gui.add(add_line_obj, 'add').name("add new line");
   dat_gui_variable_folder = dat_gui.addFolder('variables');
-  
+
   var dat_container = document.getElementById('dat-gui');
   dat_container.appendChild(dat_gui.domElement);
 
@@ -116,18 +133,16 @@ $(document).ready(function(){
   dat_container_b.style.height = height_area;
   dat_container_b.appendChild(dat_gui_animate.domElement);
 
-  document.getElementById("nd_mode_check_box").checked = true;
+  (<any>document.getElementById("nd_mode_check_box")).checked = true;
 
   fixLayoutOfDatGUI();
 
-  if(saved_hydat)
-  {
+  if (saved_hydat) {
     loadHydat(JSON.parse(saved_hydat));
   }
 
-  
-  if(plot_settings.backgroundColor != undefined)
-  {
+
+  if (plot_settings.backgroundColor != undefined) {
     setBackgroundColor(plot_settings.backgroundColor);
   }
 
@@ -138,30 +153,25 @@ $(document).ready(function(){
 
 });
 
-function time_stop()
-{
+function time_stop() {
   animatable = !plot_settings.animate;
 }
 
-function seek()
-{
+function seek() {
   //if(plot_settings.animate)
   {
-    time=plot_settings.seek;
+    time = plot_settings.seek;
     animate();
   }
 }
 
-function updateRotate()
-{
+function updateRotate() {
   graph_controls.autoRotate = plot_settings.autoRotate;
 }
 
-function update2DMode()
-{
+function update2DMode() {
   graph_controls.enableRotate = !plot_settings.twoDimensional;
-  if(plot_settings.twoDimensional)
-  {
+  if (plot_settings.twoDimensional) {
     graph_camera.position.copy(graph_controls.position0.clone());
     graph_controls.target.set(0, 0, 0);
     graph_camera.updateMatrix(); // make sure camera's local matrix is updated
@@ -169,32 +179,28 @@ function update2DMode()
   }
 }
 
-function fixLayoutOfDatGUI()
-{
+function fixLayoutOfDatGUI() {
   // to avoid layout collapsion of dat gui
-  var dg_c_inputs = $('.dg .c input[type=text]'); 
-  for(var i=0; i<dg_c_inputs.length; i++)
-  {
+  var dg_c_inputs = $('.dg .c input[type=text]');
+  for (var i = 0; i < dg_c_inputs.length; i++) {
     dg_c_inputs[i].style.height = '100%';
   }
 
-  var selectors = $('.selector'); 
-  for(var i=0; i<selectors.length; i++)
-  {
+  var selectors = $('.selector');
+  for (var i = 0; i < selectors.length; i++) {
     selectors[i].style.width = '100%';
   }
 }
 
-function savePlotSettings()
-{
+function savePlotSettings() {
   browser_storage.setItem("plot_settings", JSON.stringify(plot_settings));
 }
 
 
 /* set default hydla code */
 var default_hydla =
-//"// a sample hydla code: bouncing_particle.hydla\n\
-"// a sample hydla code: bouncing_particle.hydla\n\
+  //"// a sample hydla code: bouncing_particle.hydla\n\
+  "// a sample hydla code: bouncing_particle.hydla\n\
 \n\
 INIT <=> y = 10 & y' = 0.\n\
 FALL <=> [](y'' = -10).\n\
@@ -206,7 +212,7 @@ INIT, FALL << BOUNCE.\n\
 ";
 
 /* load saved hydla code if it exist */
-var browser_storage = localStorage;
+var browser_storage: any = localStorage;
 var saved_hydla = browser_storage.getItem("hydla");
 var saved_hydat = browser_storage.getItem("hydat");
 if (saved_hydla) {
@@ -220,32 +226,26 @@ var server_response;
 
 var hylagi_running = false;
 
-function onExecButtonClick()
-{
-  if(hylagi_running)
-  {
+function onExecButtonClick() {
+  if (hylagi_running) {
     killHyLaGI();
   }
-  else
-  {
+  else {
     sendHydLa();
   }
 }
 
-function updateExecIcon()
-{
-  if(hylagi_running)
-  {
-    document.getElementById('run_button').value="KILL"; // for new UI
+function updateExecIcon() {
+  if (hylagi_running) {
+    (<any>document.getElementById('run_button')).value = "KILL"; // for new UI
     var elist = document.getElementsByClassName("exec-icon");
     for (var i = 0; i < elist.length; ++i) {
       elist[i].classList.remove("mdi-content-send");
       elist[i].classList.add("mdi-content-clear");
     }
   }
-  else
-  {
-    document.getElementById('run_button').value="RUN"; // for new UI
+  else {
+    (<any>document.getElementById('run_button')).value = "RUN"; // for new UI
     var elist = document.getElementsByClassName("exec-icon");
     for (var i = 0; i < elist.length; ++i) {
       elist[i].classList.add("mdi-content-send");
@@ -263,79 +263,68 @@ function sendHydLa() {
   var hr = new XMLHttpRequest();
   hr.open("GET", "start_session");
   hr.send(null);
-  
-  hr.onload = function(progress_ev)
-  {
+
+  hr.onload = function (progress_ev) {
     /* build form data */
     var form = new FormData();
     form.append("hydla_code", editor.getValue());
     var options_value = "";
-    if(phase_num.value != "")options_value += " -p " + phase_num.value;
-    if(simulation_time.value != "")options_value += " -t " + simulation_time.value;
-    if(phase_num.value == "" && simulation_time.value == "")options_value += " -p10";
-    if(html_mode_check_box.checked)options_value += " -d --fhtml ";
-    if(nd_mode_check_box.checked)options_value += " --fnd ";
+    if (phase_num.value != "") options_value += " -p " + phase_num.value;
+    if (simulation_time.value != "") options_value += " -t " + simulation_time.value;
+    if (phase_num.value == "" && simulation_time.value == "") options_value += " -p10";
+    if (html_mode_check_box.checked) options_value += " -d --fhtml ";
+    if (nd_mode_check_box.checked) options_value += " --fnd ";
     else options_value += " --fno-nd ";
-    if(other_options.value != "")options_value += other_options.value;
+    if (other_options.value != "") options_value += other_options.value;
     form.append("hylagi_option", options_value);
     var timeout_value = "";
-    if(timeout_option.value != "")timeout_value = timeout_option.value;
+    if (timeout_option.value != "") timeout_value = timeout_option.value;
     else timeout_value = "30";
     form.append("timeout_option", timeout_value);
     var xmlhr = new XMLHttpRequest();
     xmlhr.open("POST", "hydat.cgi");
     xmlhr.send(form);
-    xmlhr.onload = function(ev) {
+    xmlhr.onload = function (ev) {
       var response = JSON.parse(xmlhr.responseText);
 
       switch (response.error) {
-      case 0:
-        Materialize.toast("Simulation was successful.", 1000);
-        if(response.hydat != undefined)
-        {
-          response.hydat.name = browser_storage.getItem("hydla_name");
-          loadHydat(response.hydat);
-        }
-        else
-        {
-          $('ul.tabs').tabs('select_tab', 'output-area');
-        }
-        break;
-      default:
-        if(hylagi_running)
-        {
-          Materialize.toast("Error message: " + response.message, 3000, "red darken-4");
-          $('ul.tabs').tabs('select_tab', 'output-area');
-        }
-        else
-        {
-          Materialize.toast("Killed HyLaGI", 1000);
-        }
-        break;
+        case 0:
+          Materialize.toast("Simulation was successful.", 1000);
+          if (response.hydat != undefined) {
+            response.hydat.name = browser_storage.getItem("hydla_name");
+            loadHydat(response.hydat);
+          }
+          else {
+            (<any>$('ul.tabs')).tabs('select_tab', 'output-area');
+          }
+          break;
+        default:
+          if (hylagi_running) {
+            Materialize.toast("Error message: " + response.message, 3000, "red darken-4");
+            (<any>$('ul.tabs')).tabs('select_tab', 'output-area');
+          }
+          else {
+            Materialize.toast("Killed HyLaGI", 1000);
+          }
+          break;
       }
       server_response = response;
       var output = document.getElementById("output-initial");
       output.innerHTML = "";
-      for(var si = 0; si < dynamic_script_elements.length; si++)
-      {
+      for (var si = 0; si < dynamic_script_elements.length; si++) {
         dynamic_script_elements[si].parentNode.removeChild(dynamic_script_elements[si]);
       }
       dynamic_script_elements = [];
-      if(html_mode_check_box.checked)
-      {
-        if(response.stdout != undefined)
-        {
+      if (html_mode_check_box.checked) {
+        if (response.stdout != undefined) {
           output.innerHTML += response.stdout;
         }
-        if(response.stderr != undefined)
-        {
+        if (response.stderr != undefined) {
           output.innerHTML += response.stderr;
         }
-        scriptNodes = output.getElementsByTagName("script");
-        for(var si = 0; si < scriptNodes.length; si++)
-        {
-          if(scriptNodes[si].hasAttribute("src"))
-          {
+        var scriptNodes = output.getElementsByTagName("script");
+        for (var si = 0; si < scriptNodes.length; si++) {
+          if (scriptNodes[si].hasAttribute("src")) {
             continue;
           }
           var newScript = document.createElement("script");
@@ -343,14 +332,11 @@ function sendHydLa() {
           dynamic_script_elements.push(first_script_element.parentNode.insertBefore(newScript, first_script_element));
         }
       }
-      else
-      {
-        if(response.stdout != undefined)
-        {
+      else {
+        if (response.stdout != undefined) {
           output.innerHTML += getEscapedStringForHTML(response.stdout);
         }
-        if(response.stderr != undefined)
-        {
+        if (response.stderr != undefined) {
           output.innerHTML += getEscapedStringForHTML(response.stderr);
         }
       }
@@ -361,11 +347,10 @@ function sendHydLa() {
   };
 }
 
-function getEscapedStringForHTML(orig_string)
-{
+function getEscapedStringForHTML(orig_string) {
   return orig_string.replace(/\n/mg, "<br/>").replace(/\s/mg, "&nbsp;");
 }
-  
+
 function killHyLaGI() {
   /* build form data */
   var xmlhr = new XMLHttpRequest();
@@ -384,7 +369,7 @@ function getErrorMessage(sid) {
   id.type = "hidden";
   id.name = "sid";
   id.value = sid;
-  document.getElementById("graph").contentDocument.body.appendChild(form);
+  (<any>document.getElementById("graph")).contentDocument.body.appendChild(form);
   form.appendChild(id);
   form.submit();
 }
@@ -404,7 +389,7 @@ function stopPreloader() {
 
 /* function to enable/disable input field */
 function connecttext(elemID, ischeckded) {
-  var elm = document.getElementById(elemID);
+  var elm: any = document.getElementById(elemID);
   if (ischeckded == true) {
     elm.disabled = false;
     elm.classList.remove("hide");
@@ -417,44 +402,44 @@ function connecttext(elemID, ischeckded) {
 
 var resizeLoopCount;
 
-function startResizingGraphArea()
-{
+function startResizingGraphArea() {
   resizeLoopCount = 0;
   setTimeout("resizeGraphArea()", 10);
 }
 
-function resizeGraphArea()
-{
+function resizeGraphArea() {
   resizeLoopCount++;
   resizeGraphRenderer();
   //TODO: do this without timer
-  if(resizeLoopCount < 80)    setTimeout("resizeGraphArea()", 10);
+  if (resizeLoopCount < 80) setTimeout("resizeGraphArea()", 10);
 }
 
 /* function to close/open input-pane */
-(function() {
+(function () {
   var initial_x, initial_width, initial_editor, initial_left, dragging = false;
 
-  function v_separator_mousedown_handler(e){
+  function v_separator_mousedown_handler(e) {
     initial_x = e.pageX;
     initial_width = $("#left-pane").width();
     initial_left = $("#v-separator").css("left");
     initial_editor = $("#editor").width();
     dragging = true;
     $("<div id='secretdiv'>")
-      .css({ position: "absolute",
-             left: 0,
-             top: 0,
-             height: "100%",
-             width: "100%",
-             zIndex: 100000 })
+      .css({
+        position: "absolute",
+        left: 0,
+        top: 0,
+        height: "100%",
+        width: "100%",
+        zIndex: 100000
+      })
       .appendTo("body")
       .mousemove(v_separator_mousemove_handler)
       .mouseup(v_separator_mouseup_handler)
   }
 
-  function v_separator_mousemove_handler(e){
-    if(!dragging) return;
+  function v_separator_mousemove_handler(e) {
+    if (!dragging) return;
     var diff = e.pageX - initial_x;
     $("#left-pane").width(initial_width + diff);
     $("#editor").width(initial_editor + diff);
@@ -462,46 +447,48 @@ function resizeGraphArea()
     editor.resize();
   }
 
-  function v_separator_mouseup_handler(e){
+  function v_separator_mouseup_handler(e) {
     dragging = false;
     $("#secretdiv").remove();
   }
 
   $("#v-separator")
-      .mousedown(v_separator_mousedown_handler)
+    .mousedown(v_separator_mousedown_handler)
 })();
 
 
 /* function to adjust height of graph-setting-area */
-(function() {
+(function () {
   var initial_y, initial_height,
     dragging = false;
 
-  function h_separator_mousedown_handler(e){
+  function h_separator_mousedown_handler(e) {
     initial_y = e.pageY;
     initial_height = $("#input-pane").height();
     dragging = true;
     $("<div id='secretdiv'>")
-      .css({ position: "absolute",
-             left: 0,
-             top: 0,
-             height: "100%",
-             width: "100%",
-             zIndex: 100000 })
+      .css({
+        position: "absolute",
+        left: 0,
+        top: 0,
+        height: "100%",
+        width: "100%",
+        zIndex: 100000
+      })
       .appendTo("body")
       .mousemove(h_separator_mousemove_handler)
       .mouseup(h_separator_mouseup_handler)
   }
 
-  function h_separator_mousemove_handler(e){
-    if(!dragging) return;
+  function h_separator_mousemove_handler(e) {
+    if (!dragging) return;
     var diff = e.pageY - initial_y;
     $("#input-pane").height(initial_height + diff);
     $("#editor").height(initial_height + diff);
     editor.resize();
   }
 
-  function h_separator_mouseup_handler(e){
+  function h_separator_mouseup_handler(e) {
     dragging = false;
     $("#secretdiv").remove();
   }
@@ -513,7 +500,7 @@ function resizeGraphArea()
 function toggleInputPane() {
   var elm = document.getElementById("left-pane");
   var tgl = document.getElementById("v-toggle-icon");
-  if(elm.getAttribute("style")) {
+  if (elm.getAttribute("style")) {
     elm.removeAttribute("style");
     tgl.classList.remove("mdi-navigation-chevron-right");
     tgl.classList.add("mdi-navigation-chevron-left");
@@ -531,7 +518,7 @@ function saveHydla() {
   var blob = new Blob([editor.getValue()])
   var object = window.URL.createObjectURL(blob);
   var d = new Date();
-  var date = d.getFullYear() + "-" + d.getMonth()+1 + "-" + d.getDate() + "T" + d.getHours() + "-" + d.getMinutes() + "-" + d.getSeconds();
+  var date = d.getFullYear() + "-" + d.getMonth() + 1 + "-" + d.getDate() + "T" + d.getHours() + "-" + d.getMinutes() + "-" + d.getSeconds();
   var a = document.createElement("a");
   a.href = object;
   a.download = date + ".hydla";
@@ -551,23 +538,21 @@ function loadFile() {
     "click", true, false, window, 0, 0, 0, 0, 0
     , false, false, false, false, 0, null
   );
-  i.addEventListener("change", function(ev) {
+  i.addEventListener("change", function (ev) {
     var input_file = i.files[0];
-    var fr = new FileReader;
+    var fr: any = new FileReader;
     fr.readAsText(input_file);
     var splitted_strs = input_file.name.split(".");
     var ext = splitted_strs[splitted_strs.length - 1].toLowerCase();
-    if(ext == "hydat")
-    {
-      fr.onload = function(evt) {
+    if (ext == "hydat") {
+      fr.onload = function (evt) {
         var input_hydat = JSON.parse(fr.result);
         loadHydat(input_hydat);
       };
-    } 
-    else
-    {
-      browser_storage.setItem("hydla_name", input_file.name);      
-      fr.onload = function(evt) {
+    }
+    else {
+      browser_storage.setItem("hydla_name", input_file.name);
+      fr.onload = function (evt) {
         editor.setValue(fr.result);
       };
     }
@@ -580,7 +565,7 @@ function saveHydat() {
   var blob = new Blob([JSON.stringify(current_hydat)]);
   var object = window.URL.createObjectURL(blob);
   var d = new Date();
-  var date = d.getFullYear() + "-" + d.getMonth()+1 + "-" + d.getDate() + "T" + d.getHours() + "-" + d.getMinutes() + "-" + d.getSeconds();
+  var date = d.getFullYear() + "-" + d.getMonth() + 1 + "-" + d.getDate() + "T" + d.getHours() + "-" + d.getMinutes() + "-" + d.getSeconds();
   var a = document.createElement("a");
   a.href = object;
   a.download = date + ".hydat";
@@ -598,7 +583,7 @@ function saveHydlaToWebstorage() {
   autosave_changed = false;
   browser_storage.setItem("hydla", editor.getValue());
   Materialize.toast("Saved", 1000);
-  setTimeout(function() {
+  setTimeout(function () {
     if (autosave_changed) {
       saveHydlaToWebstorage();
     } else {
@@ -607,9 +592,9 @@ function saveHydlaToWebstorage() {
   }, 5000);
 }
 
-autosave_event_enabled = true;
-autosave_changed = false;
-editor.on("change", function(e) {
+var autosave_event_enabled = true;
+var autosave_changed = false;
+editor.on("change", function (e) {
   if (autosave_event_enabled) {
     saveHydlaToWebstorage();
   } else {
@@ -619,53 +604,48 @@ editor.on("change", function(e) {
 
 /* function to save editor into Web Storage */
 function saveKeyBindingToWebstorage() {
-  var bind_selector = document.getElementById("key_binding_selector").value;
+  var bind_selector = (<any>document.getElementById("key_binding_selector")).value;
   browser_storage.setItem("key_binding", bind_selector);
 }
 
 function loadKeyBindingFromWebstorage() {
   var key_binding_setting = browser_storage.getItem("key_binding");
-  var selector = document.getElementById("key_binding_selector");
-  if(key_binding_setting != undefined)
-  {
+  var selector: any = document.getElementById("key_binding_selector");
+  if (key_binding_setting != undefined) {
     selector.value = browser_storage.getItem("key_binding");
   }
-  else
-  {
+  else {
     selector.value = selector.options[selector.selectedIndex].value;
     browser_storage.setItem("key_binding", selector.value);
   }
-  if(selector.value == "") editor.setKeyboardHandler(null);
+  if (selector.value == "") editor.setKeyboardHandler(null);
   else editor.setKeyboardHandler(selector.value);
 }
 
 /* function to save theme into Web Storage */
 function saveThemeToWebstorage() {
-  var theme = document.getElementById("theme_selector").value;
+  var theme = (<any>document.getElementById("theme_selector")).value;
   browser_storage.setItem("theme", theme);
 }
 
 function loadThemeFromWebstorage() {
   var theme_setting = browser_storage.getItem("theme");
-  if(theme_setting != undefined)
-  {
-    document.getElementById("theme_selector").value = browser_storage.getItem("theme");
-  }else
-  {
+  if (theme_setting != undefined) {
+    (<any>document.getElementById("theme_selector")).value = browser_storage.getItem("theme");
+  } else {
     browser_storage.setItem("theme", theme_selector.value);
   }
   editor.setTheme("ace/theme/" + theme_selector.value);
 }
 
 
-var plot_lines = {};
-var settingsForCurrentHydat = {};
+var plot_lines: any = {};
+var settingsForCurrentHydat: any = {};
 
 
 /* function to update variable selector for graph */
 function initVariableSelector(hydat) {
-  for(var i in plot_lines)
-  {
+  for (var i in plot_lines) {
     dat_gui_variable_folder.removeFolder(plot_lines[i].folder.name);
   }
 
@@ -674,13 +654,11 @@ function initVariableSelector(hydat) {
   //var guard_list ={x:["x", "xSWON"]};
 
   settingsForCurrentHydat = browser_storage.getItem(hydat.name);
-  if(settingsForCurrentHydat != null)
-  {
+  if (settingsForCurrentHydat != null) {
     settingsForCurrentHydat = JSON.parse(settingsForCurrentHydat);
     var line_settings = settingsForCurrentHydat.plot_line_settings;
-    for(var i in line_settings)
-    {
-      var line = addNewLineWithIndex(line_settings[i].x, line_settings[i].y, line_settings[i].z, i);
+    for (var i in line_settings) {
+      var line = addNewLineWithIndex(line_settings[i].x, line_settings[i].y, line_settings[i].z, parseInt(i));
       /*for(key in guard_list){
         if(line_settings[i].x == key){
           for(var l in guard_list.x){
@@ -688,27 +666,26 @@ function initVariableSelector(hydat) {
           }
         }
       }*/
-      if(line.settings.x != "" || line.settings.y != "" || line.settings.z != "")line.folder.open();
+      if (line.settings.x != "" || line.settings.y != "" || line.settings.z != "") line.folder.open();
     }
     replot_all();
   }
 
-  if(Object.keys(plot_lines).length == 0)
-  {
-    settingsForCurrentHydat = {plot_line_settings: {}};
-    var first_line = addNewLine("t", current_hydat != undefined?current_hydat.variables[0]:"", "0");
+  if (Object.keys(plot_lines).length == 0) {
+    settingsForCurrentHydat = { plot_line_settings: {} };
+    var first_line = addNewLine("t", current_hydat != undefined ? current_hydat.variables[0] : "", "0");
     first_line.color_angle = 0;
     replot(first_line);
     first_line.folder.open();
   }
-  
+
   dat_gui_variable_folder.open();
 }
 
 //TODO: implement this in more elegant way
 setTimeout("resizeGraphRenderer()", 200);
 
-dat.GUI.prototype.removeFolder = function(name) {
+(<any>dat.GUI.prototype).removeFolder = function (name) {
   var folder = this.__folders[name];
   if (!folder) {
     return;
@@ -719,16 +696,13 @@ dat.GUI.prototype.removeFolder = function(name) {
   this.onResize();
 }
 
-function showToast(message, duration, classes)
-{
+function showToast(message, duration, classes) {
   Materialize.toast(message, duration, classes);
   var toast_container = document.getElementById("toast-container");
   var i;
   var MAX_CHILDREN_NUM = 5;
-  if(toast_container.children.length > MAX_CHILDREN_NUM)
-  {
-    for(i = 0; i < toast_container.children.length - MAX_CHILDREN_NUM; i++)
-    {
+  if (toast_container.children.length > MAX_CHILDREN_NUM) {
+    for (i = 0; i < toast_container.children.length - MAX_CHILDREN_NUM; i++) {
       toast_container.removeChild(toast_container.children[i]);
     }
   }
@@ -739,32 +713,32 @@ function showToast(message, duration, classes)
 var in_graph_area;
 $('#graph-area').hover(
   () => { in_graph_area = true; },
-  function() { in_graph_area = false; $('#scroll-message').css("opacity","0"); }
+  function () { in_graph_area = false; $('#scroll-message').css("opacity", "0"); }
 );
 
 var timeout;
-$("body").scroll(function() {
+$("body").scroll(function () {
   clearTimeout(timeout);
   if (in_graph_area == true) {
-    $('#scroll-message').css("opacity","0.65");
-    timeout = setTimeout(function(){$('#scroll-message').css("opacity","0");}, 1150);
+    $('#scroll-message').css("opacity", "0.65");
+    timeout = setTimeout(function () { $('#scroll-message').css("opacity", "0"); }, 1150);
   }
 });
 
-const key_shift  = 16;
-const key_ctr    = 17;
-const key_alt    = 18;
+const key_shift = 16;
+const key_ctr = 17;
+const key_alt = 18;
 const key_meta_l = 91;
 
 window.onkeydown = function (e) {
   if (!e) e = window.event;
-  if (e.keyCode==key_shift|e.keyCode==key_ctr|e.keyCode==key_alt|e.keyCode==key_meta_l) {
-    enableZoom(); $('#scroll-message').css("opacity","0");
+  if (e.keyCode == key_shift || e.keyCode == key_ctr || e.keyCode == key_alt || e.keyCode == key_meta_l) {
+    enableZoom(); $('#scroll-message').css("opacity", "0");
   }
 }
-window.onkeyup = function(e) {
+window.onkeyup = function (e) {
   if (!e) e = window.event;
-  if (e.keyCode==key_shift|e.keyCode==key_ctr|e.keyCode==key_alt|e.keyCode==key_meta_l) {
+  if (e.keyCode == key_shift || e.keyCode == key_ctr || e.keyCode == key_alt || e.keyCode == key_meta_l) {
     disableZoom();
   }
 }
@@ -772,13 +746,13 @@ window.onkeyup = function(e) {
 function enableZoom() {
   if (classic_ui) return;
   graph_controls.enableZoom = true;
-  $('body').css("overflow-y","hidden");
+  $('body').css("overflow-y", "hidden");
 }
 function disableZoom() {
   if (classic_ui) return;
   graph_controls.enableZoom = false;
-  $('body').css("overflow-y","visible");
+  $('body').css("overflow-y", "visible");
 }
-function initScrollZoom() { 
+function initScrollZoom() {
   disableZoom();
 }

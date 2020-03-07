@@ -1,3 +1,10 @@
 secret_key
 /HyLaGI
 /static/node_modules/
+
+/static/js/domready.js
+/static/js/graph_axis.js
+/static/js/main.js
+/static/js/parse.js
+/static/js/plot.js
+/static/js/window.js

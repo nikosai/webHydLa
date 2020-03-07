@@ -3,7 +3,7 @@
     "target": "es6",
     "module": "commonjs",
     "outDir": "./js",
-    "strict": true,
+    "strict": false,
   },
   "include": [
     "./ts/**/*.ts"

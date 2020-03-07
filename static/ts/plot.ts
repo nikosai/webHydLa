@@ -1,4 +1,4 @@
-// import * as THREE from 'three';
+//import * as THREE from 'three';
 declare var graph_scene: any;
 declare var plot_settings: any;
 declare var graph_renderer: any;
@@ -11,8 +11,6 @@ declare var initVariableSelector: any;
 declare var plot_lines: any;
 declare var time: any;
 declare var updateFolder: any;
-declare var startPreloader: any;
-declare var stopPreloader: any;
 declare var graph_controls: any;
 declare var render_three_js: any;
 declare var graph_area: any;
