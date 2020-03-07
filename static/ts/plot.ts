@@ -1,3 +1,22 @@
+// import * as THREE from 'three';
+declare var graph_scene: any;
+declare var plot_settings: any;
+declare var graph_renderer: any;
+declare var graph_camera: any;
+declare var settingsForCurrentHydat: any;
+declare var browser_storage: any;
+declare var parameter_setting: any;
+declare var showToast: any;
+declare var initVariableSelector: any;
+declare var plot_lines: any;
+declare var time: any;
+declare var updateFolder: any;
+declare var startPreloader: any;
+declare var stopPreloader: any;
+declare var graph_controls: any;
+declare var render_three_js: any;
+declare var graph_area: any;
+
 class HydatException {
   name: string;
   message: string;
@@ -7,23 +26,60 @@ class HydatException {
   }
 }
 
-function translate(hydat: any) {
+function translate(hydat: Hydat) {
   for (var i = 0; i < hydat.first_phases.length; i++) {
     translate_phase(hydat.first_phases[i]);
   }
   translate_parameter_map(hydat.parameters);
 }
 
-function translate_phase(phase: any) {
+type Hydat = {
+  first_phases: Phase[];
+  name: string;
+  parameters: ParameterMap;
+  variables: string[];
+};
+type StrOrV = string | Vnode;
+type Time = {
+  time_point: StrOrV;
+  start_time: StrOrV;
+  end_time: StrOrV | undefined;
+};
+type Phase = {
+  children: Phase[];
+  id: number;
+  parameter_map: ParameterMap;
+  parameter_maps: ParameterMap[];
+  simulation_state: string;
+  time: Time;
+  type: string; // PP, IP
+  variable_map: VariableMap;
+}
+type VariableMap = {
+  [vname: string]: any;
+};
+type Bound = {
+  closed: boolean;
+  value: StrOrV;
+};
+type ParameterMap = {
+  [pname: string]: {
+    unique_value: StrOrV;
+    lower_bounds: Bound[];
+    upper_bounds: Bound[];
+  }
+};
+
+function translate_phase(phase: Phase) {
   if (phase.type == "PP") {
-    phase.time.time_point = parseValue(phase.time.time_point);
+    phase.time.time_point = parseValue(<string>phase.time.time_point);
   } else {
-    phase.time.start_time = parseValue(phase.time.start_time);
+    phase.time.start_time = parseValue(<string>phase.time.start_time);
     if (phase.time.end_time == undefined || phase.time.end_time == "Infinity") {
       phase.time.end_time = new Plus(new Constant(2), phase.time.start_time);
     }
     else {
-      phase.time.end_time = parseValue(phase.time.end_time);
+      phase.time.end_time = parseValue(<string>phase.time.end_time);
     }
   }
   for (var key in phase.variable_map) {
@@ -41,22 +97,22 @@ function translate_phase(phase: any) {
   return 0;
 }
 
-function translate_parameter_map(parameter_map: any) {
+function translate_parameter_map(parameter_map: ParameterMap) {
   for (var key in parameter_map) {
     if (parameter_map[key].unique_value == undefined) {
       for (var i = 0; i < parameter_map[key].lower_bounds.length; i++) {
-        parameter_map[key].lower_bounds[i].value = parseValue(parameter_map[key].lower_bounds[i].value);
+        parameter_map[key].lower_bounds[i].value = parseValue(<string>parameter_map[key].lower_bounds[i].value);
       }
       for (var i = 0; i < parameter_map[key].upper_bounds.length; i++) {
-        parameter_map[key].upper_bounds[i].value = parseValue(parameter_map[key].upper_bounds[i].value);
+        parameter_map[key].upper_bounds[i].value = parseValue(<string>parameter_map[key].upper_bounds[i].value);
       }
     } else {
-      parameter_map[key].unique_value = parseValue(parameter_map[key].unique_value);
+      parameter_map[key].unique_value = parseValue(<string>parameter_map[key].unique_value);
     }
   }
 }
 
-function makeAxis(range: any, delta: number, color: THREE.Color) {
+function makeAxis(range: Range, delta: number, color: THREE.Color) {
   var geometry = new THREE.Geometry();
   var material = new THREE.LineBasicMaterial(<any>{ vertexColors: THREE.VertexColors })
   var i;
@@ -73,7 +129,7 @@ function makeAxis(range: any, delta: number, color: THREE.Color) {
   return grid_obj;
 };
 
-function apply_parameter_to_expr(expr: any, parameter_value_list: any) {
+function apply_parameter_to_expr(expr: string, parameter_value_list: { [x: string]: string; }) {
   var ret_expr = expr;
   for (var key in parameter_value_list) {
     while (ret_expr.indexOf(key, 0) != -1) {
@@ -90,7 +146,12 @@ function clearPlot() {
   // TODO: 設定を変更した時に動的に変更が反映されるようにする
 }
 
-function updateAxisScaleLabel(xrange: any, yrange: any, zrange: any) {
+class Range {
+  min!: number;
+  max!: number;
+}
+
+function updateAxisScaleLabel(xrange: Range, yrange: Range, zrange: Range) {
   var canvas = document.getElementById('scaleLabelCanvas');
   if (!canvas || !(<any>canvas).getContext) {
     return false;
@@ -140,7 +201,7 @@ function calculateNumberOfDigits(interval: number) {
   return num;
 }
 
-function toScreenPosition(pos: any, camera: any) {
+function toScreenPosition(pos: THREE.Vector3, camera: THREE.Camera) {
 
   var widthHalf = 0.5 * graph_renderer.context.canvas.width;
   var heightHalf = 0.5 * graph_renderer.context.canvas.height;
@@ -156,7 +217,7 @@ function toScreenPosition(pos: any, camera: any) {
   };
 }
 
-function calculateScaleInterval(range: any) {
+function calculateScaleInterval(range: Range) {
   var width = range.max - range.min;
   var log = Math.log(width) / Math.log(10);
   var floor = Math.floor(log);
@@ -171,7 +232,7 @@ function calculateScaleInterval(range: any) {
 
 var current_hydat: any;
 
-function loadHydat(hydat: any) {
+function loadHydat(hydat: Hydat) {
   try {
     browser_storage.setItem("hydat", JSON.stringify(hydat));
     current_hydat = hydat;
@@ -289,9 +350,8 @@ var phase_index;
 var phase;
 var vec;
 var vec_animation;
-var three_line;
 
-function add_plot_each(phase_index_array: any, axes: any, line: any, width: number, color: any, dt: any, parameter_condition_list: any, current_param_idx: number, current_line_vec: any) {
+function add_plot_each(phase_index_array: any, axes: any, line: any, width: number, color: any, dt: number, parameter_condition_list: any, current_param_idx: number, current_line_vec: any) {
   try {
     while (true) {
       if (line.plot_ready) {
@@ -443,7 +503,7 @@ function add_plot_each(phase_index_array: any, axes: any, line: any, width: numb
 }
 
 
-function divideParameter(parameter_map: any) {
+function divideParameter(parameter_map: ParameterMap) {
 
   var now_parameter_condition_list: any = [{}];
 
@@ -529,7 +589,7 @@ function hue2rgb(h: number) {
 
 
 
-function phase_to_line_vectors(phase: any, parameter_condition_list: any, axis: any, maxDeltaT: any) {
+function phase_to_line_vectors(phase: Phase, parameter_condition_list: Env, axis: any, maxDeltaT: number) {
   var line: any = [];
   var t;
   if (phase.simulation_state != "SIMULATED" && phase.simulation_state != "TIME_LIMIT" && phase.simulation_state != "STEP_LIMIT") return line;
@@ -543,8 +603,8 @@ function phase_to_line_vectors(phase: any, parameter_condition_list: any, axis: 
     newPos.isPP = true;
     line.push(newPos);
   } else {
-    var start_time = phase.time.start_time.getValue(env);
-    var end_time = phase.time.end_time.getValue(env);
+    var start_time = (<Vnode>phase.time.start_time).getValue(env);
+    var end_time = (<Vnode>phase.time.end_time).getValue(env);
     if (!Number.isFinite(start_time) || !Number.isFinite(end_time)) throw new HydatException("invalid time interval: from" + phase.time.start_time + " to " + phase.time.end_time);
     var MIN_STEP = 10; // Minimum step of plotting one IP
     var delta_t = Math.min(maxDeltaT, (end_time - start_time) / MIN_STEP);
@@ -566,22 +626,22 @@ function vector3_to_geometry(vector3_list: any) {
   return geometry;
 }
 
-
-function check_parameter_condition(parameter_maps: any, parameter_condition_list: any) {
+type Env = { [x: string]: Vnode; };
+function check_parameter_condition(parameter_maps: ParameterMap[], parameter_condition_list: Env) {
   var epsilon = 0.0001;
   for (var i = 0; i < parameter_maps.length; i++) {
     var included = true;
     for (var key in parameter_maps[i]) {
       if (parameter_condition_list[key] === undefined) continue;
       if (typeof parameter_maps[i][key].unique_value === 'undefined') {
-        var lb = parameter_maps[i][key].lower_bounds[0].value.getValue(parameter_condition_list);
-        var ub = parameter_maps[i][key].upper_bounds[0].value.getValue(parameter_condition_list);
+        var lb = (<Vnode>parameter_maps[i][key].lower_bounds[0].value).getValue(parameter_condition_list);
+        var ub = (<Vnode>parameter_maps[i][key].upper_bounds[0].value).getValue(parameter_condition_list);
         if (!(lb <= parameter_condition_list[key].getValue(parameter_condition_list) + epsilon
           && ub >= parameter_condition_list[key].getValue(parameter_condition_list) - epsilon)) {
           included = false;
         }
-      } else if (!(parameter_maps[i][key].unique_value.getValue(parameter_condition_list) <= parameter_condition_list[key].getValue(parameter_condition_list) + epsilon
-        && parameter_maps[i][key].unique_value.getValue(parameter_condition_list) >= parameter_condition_list[key].getValue(parameter_condition_list) - epsilon)) {
+      } else if (!((<Vnode>parameter_maps[i][key].unique_value).getValue(parameter_condition_list) <= parameter_condition_list[key].getValue(parameter_condition_list) + epsilon
+        && (<Vnode>parameter_maps[i][key].unique_value).getValue(parameter_condition_list) >= parameter_condition_list[key].getValue(parameter_condition_list) - epsilon)) {
         included = false;
       }
     }
@@ -826,9 +886,10 @@ function calculate_intercept(point_a: THREE.Vector3, point_b: THREE.Vector3, poi
 
 var xAxisLine: any, yAxisLine: THREE.Object3D, zAxisLine: THREE.Object3D, prev_range: any;
 
-var xAxisColorBase = { r: 1.0, g: 0.3, b: 0.3 };
-var yAxisColorBase = { r: 0.3, g: 1.0, b: 0.3 };
-var zAxisColorBase = { r: 0.3, g: 0.3, b: 1.0 };
+type Color = { r: number; g: number; b: number; };
+var xAxisColorBase: Color = { r: 1.0, g: 0.3, b: 0.3 };
+var yAxisColorBase: Color = { r: 0.3, g: 1.0, b: 0.3 };
+var zAxisColorBase: Color = { r: 0.3, g: 0.3, b: 1.0 };
 var xAxisColor = "#FF8080";
 var yAxisColor = "#80FF80";
 var zAxisColor = "#8080FF";
@@ -989,7 +1050,7 @@ function setBackgroundColor(color: string) {
 }
 
 
-function calculateColorWithBrightness(base: any, brightness: number) {
+function calculateColorWithBrightness(base: Color, brightness: number) {
   return "#" + ("00" + Math.floor(base.r * brightness).toString(16)).slice(-2)
     + ("00" + Math.floor(base.g * brightness).toString(16)).slice(-2)
     + ("00" + Math.floor(base.b * brightness).toString(16)).slice(-2);

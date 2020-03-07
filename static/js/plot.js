@@ -83,6 +83,8 @@ function clearPlot() {
     // TODO: 複数のプロットが存在するときの描画範囲について考える
     // TODO: 設定を変更した時に動的に変更が反映されるようにする
 }
+class Range {
+}
 function updateAxisScaleLabel(xrange, yrange, zrange) {
     var canvas = document.getElementById('scaleLabelCanvas');
     if (!canvas || !canvas.getContext) {
@@ -264,7 +266,6 @@ var phase_index;
 var phase;
 var vec;
 var vec_animation;
-var three_line;
 function add_plot_each(phase_index_array, axes, line, width, color, dt, parameter_condition_list, current_param_idx, current_line_vec) {
     try {
         while (true) {

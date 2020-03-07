@@ -1,11 +1,13 @@
+type Env = { [x: string]: Vnode; };
+
 interface Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 }
 
 class Plus implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(lhs: Vnode, rhs: Vnode) {
     this.toString = function () { return "(" + lhs.toString() + " + " + rhs.toString() + ")"; };
@@ -17,7 +19,7 @@ class Plus implements Vnode {
 
 class Subtract implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(lhs: Vnode, rhs: Vnode) {
     this.toString = function () { return "(" + lhs.toString() + " - " + rhs.toString() + ")"; };
@@ -29,7 +31,7 @@ class Subtract implements Vnode {
 
 class Multiply implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(lhs: Vnode, rhs: Vnode) {
     this.toString = function () { return lhs.toString() + " * " + rhs.toString(); };
@@ -41,7 +43,7 @@ class Multiply implements Vnode {
 
 class Divide implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(lhs: Vnode, rhs: Vnode) {
     this.toString = function () { return lhs.toString() + " / " + rhs.toString(); };
@@ -53,7 +55,7 @@ class Divide implements Vnode {
 
 class Power implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(lhs: Vnode, rhs: Vnode) {
     this.toString = function () { return lhs.toString() + " ^ " + rhs.toString(); };
@@ -65,7 +67,7 @@ class Power implements Vnode {
 
 class Constant implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(val: number) {
     this.toString = function () { return val.toString(); };
@@ -77,11 +79,11 @@ class Constant implements Vnode {
 
 class Variable implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(name: string) {
     this.toString = function () { return name; };
-    this.getValue = function (env) {
+    this.getValue = function (env: Env) {
       if (env[name] == undefined)
         throw new Error(name + " is not defined");
       return env[name].getValue(env);
@@ -91,7 +93,7 @@ class Variable implements Vnode {
 
 class Log implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "log(" + arg + ")"; };
@@ -103,7 +105,7 @@ class Log implements Vnode {
 
 class Sin implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "sin(" + arg + ")"; };
@@ -115,7 +117,7 @@ class Sin implements Vnode {
 
 class Cos implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "cos(" + arg + ")"; };
@@ -127,7 +129,7 @@ class Cos implements Vnode {
 
 class Tan implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "tan(" + arg + ")"; };
@@ -139,7 +141,7 @@ class Tan implements Vnode {
 
 class ArcSin implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "asin(" + arg + ")"; };
@@ -151,7 +153,7 @@ class ArcSin implements Vnode {
 
 class ArcCos implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "acos(" + arg + ")"; };
@@ -163,7 +165,7 @@ class ArcCos implements Vnode {
 
 class ArcTan implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "atan(" + arg + ")"; };
@@ -175,7 +177,7 @@ class ArcTan implements Vnode {
 
 class Sinh implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "sinh(" + arg + ")"; };
@@ -187,7 +189,7 @@ class Sinh implements Vnode {
 
 class Cosh implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "cosh(" + arg + ")"; };
@@ -199,7 +201,7 @@ class Cosh implements Vnode {
 
 class Tanh implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "tanh(" + arg + ")"; };
@@ -211,7 +213,7 @@ class Tanh implements Vnode {
 
 class ArcSinh implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "asinh(" + arg + ")"; };
@@ -223,7 +225,7 @@ class ArcSinh implements Vnode {
 
 class ArcCosh implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "acosh(" + arg + ")"; };
@@ -235,7 +237,7 @@ class ArcCosh implements Vnode {
 
 class ArcTanh implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "atanh(" + arg + ")"; };
@@ -247,7 +249,7 @@ class ArcTanh implements Vnode {
 
 class Floor implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "floor(" + arg + ")"; };
@@ -259,7 +261,7 @@ class Floor implements Vnode {
 
 class Negative implements Vnode {
   toString: () => string;
-  getValue: (env: any) => number;
+  getValue: (env: Env) => number;
 
   constructor(arg: Vnode) {
     this.toString = function () { return "-" + arg; };
