@@ -308,7 +308,7 @@ function parseValue(value_str: string) {
   var variable = function (s: string, i: number[]) {
     var v = s[i[0]];
     i[0]++;
-    while (isalnum(s[i[0]])) {
+    while (isalnum(s[i[0]]) || s[i[0]] == "'") {
       v += s[i[0]];
       i[0]++;
     }
