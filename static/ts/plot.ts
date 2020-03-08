@@ -323,6 +323,14 @@ function add_plot(line: any) {
 }
 
 
+class Stack<T> {
+  private _arr: T[] = [];
+  constructor(arr: T[]) { this._arr = arr; };
+  public size(): number { return this._arr.length; };
+  public pop(): T { return <T>this._arr.pop(); };
+  public push(v: T): void { this._arr.push(v); };
+  public top(): T { return this._arr[this._arr.length - 1]; };
+};
 function plot_ready(line: any) {
   var plot_information = line.plot_information;
   if (plot_information.line.plotting) {
@@ -333,7 +341,8 @@ function plot_ready(line: any) {
     line.plot_ready = undefined;
     line.last_plot_time = new Date().getTime();
     if (PlotStartTime == undefined) PlotStartTime = new Date().getTime();
-    add_plot_each(plot_information.phase_index_array, plot_information.axes, plot_information.line, plot_information.width, plot_information.color, plot_information.dt, plot_information.parameter_condition_list, 0, []);
+    var phase_index_stack = new Stack<{ phase: Phase, index: number }>(plot_information.phase_index_array);
+    add_plot_each(phase_index_stack, plot_information.axes, plot_information.line, plot_information.width, plot_information.color, plot_information.dt, plot_information.parameter_condition_list, 0, []);
   }
 }
 
@@ -347,7 +356,7 @@ var phase;
 var vec;
 var vec_animation;
 
-function add_plot_each(phase_index_array: any, axes: any, line: any, width: number, color: any, dt: number, parameter_condition_list: any, current_param_idx: number, current_line_vec: any) {
+function add_plot_each(phase_index_stack: Stack<{ phase: Phase, index: number }>, axes: any, line: any, width: number, color: any, dt: number, parameter_condition_list: any, current_param_idx: number, current_line_vec: any) {
   try {
     while (true) {
       if (line.plot_ready) {
@@ -357,16 +366,15 @@ function add_plot_each(phase_index_array: any, axes: any, line: any, width: numb
         return;
       }
 
-      // phase_index_array is used to implement dfs without function call.
-      phase_index = phase_index_array[phase_index_array.length - 1];
-      phase = phase_index.phase;
+      // phase_index_stack is used for non-recursive dfs.
+      phase_index = phase_index_stack.top();
+      phase = phase_index.phase; // pop phase
       vec = phase_to_line_vectors(phase, parameter_condition_list[current_param_idx], axes, dt);
       current_line_vec = current_line_vec.concat(vec);
       vec_animation = phase_to_line_vectors(phase, parameter_condition_list[current_param_idx], axes, 0.01);
       current_line_vec_animation = current_line_vec_animation.concat(vec_animation);
-      if (phase.children.length == 0) {
+      if (phase.children.length == 0) { // on leaves
         array += 1;
-        // on leaves
 
         var cylindersGeometry = new THREE.Geometry();
         var scaledWidth = 0.5 * width / graph_camera.zoom;
@@ -430,42 +438,38 @@ function add_plot_each(phase_index_array: any, axes: any, line: any, width: numb
         plot_animate[array] = (sphere);
         current_line_vec = [];
         current_line_vec_animation = [];
-        phase_index_array.pop();
-        phase_index = phase_index_array[phase_index_array.length - 1];
+        phase_index_stack.pop();
+        phase_index = phase_index_stack.top();
         ++(phase_index.index);
         phase = phase_index.phase;
         if (animation_line.length > 4) {
           console.log("a");
         }
       }
-      while (true) {
-        var to_next_child = false;
+      while2: while (true) {
         // search next child to plot
-        for (; phase_index.index < phase.children.length; phase_index.index++) {
+        for ( /* restart searching */; phase_index.index < phase.children.length; phase_index.index++) {
           var child = phase.children[phase_index.index];
           var included_by_parameter_condition = check_parameter_condition(child.parameter_maps, parameter_condition_list[current_param_idx]);
-          if (included_by_parameter_condition) {
-            phase_index_array.push({ phase: child, index: 0 });
+          if (included_by_parameter_condition) { // パラメータに含まれるchild，つまり描画するべきchildが見つかった
+            phase_index_stack.push({ phase: child, index: 0 }); // start from 0th child
             var current_time = new Date().getTime();
-            if (current_time - line.last_plot_time >= 200) {
+            if (current_time - line.last_plot_time >= 200) { // interrupt searching
               line.last_plot_time = current_time;
               // use setTimeout to check event queue
               requestAnimationFrame(function () {
-                add_plot_each(phase_index_array, axes, line, width, color, dt, parameter_condition_list, current_param_idx, current_line_vec)
+                add_plot_each(phase_index_stack, axes, line, width, color, dt, parameter_condition_list, current_param_idx, current_line_vec)
               });
               return;
             }
-            else to_next_child = true;
-            break;
+            break while2; // go to child
           }
         }
-        if (to_next_child) break;
-
+        // 以下，描画するべきchildが見つからなかった場合 
 
         // Plot for this current_param_idx is completed.
-        if (phase_index_array.length == 1) {
-          ++current_param_idx;
-          if (current_param_idx >= parameter_condition_list.length) {
+        if (phase_index_stack.size() == 1) {
+          if (current_param_idx == parameter_condition_list.length - 1) { // last
             // Plot is completed.
             line.plotting = false;
             checkAndStopPreloader();
@@ -475,15 +479,18 @@ function add_plot_each(phase_index_array: any, axes: any, line: any, width: numb
             // setTimeout(function()
             //             {add_plot_each([{phase:phase_index_array[0].phase, index:0}], axes, line, width, color, dt, parameter_condition_list, current_param_idx, [])
             //             }, 0);
-            phase_index_array[0].index = 0;
+
+            // 次のparameter conditionで探索しなおす
+            ++current_param_idx;
+            phase_index_stack.top().index = 0; // phase_index_stack._arr = [{ phase: phase_index_array[0].phase, index: 0 }];
             break;
           }
         } else {
           // go to parent phase
-          phase_index_array.pop();
-          phase_index = phase_index_array[phase_index_array.length - 1];
+          phase_index_stack.pop();
+          phase_index = phase_index_stack.top();
           ++(phase_index.index);
-          phase = phase_index.phase;
+          phase = phase_index.phase; // start from next sibling
         }
       }
     }
