@@ -440,6 +440,7 @@ function add_plot_each(phase_index_stack: Stack<{ phase: Phase, index: number }>
         s_material = new THREE.MeshBasicMaterial({ color: color[current_param_idx] });
         sphere = new THREE.Mesh(s_geometry, s_material);
         sphere.position.set(0, 0, 0);
+        sphere.isSphere = true;
         graph_scene.add(sphere);
         plot_animate[array] = (sphere);
 
@@ -951,7 +952,7 @@ function animate() {
   if (time_prev != time) {
     plot_animate = [];
     arr = 0;
-    for (var i = 0; i < graph_scene.children.length - 1; i++) {
+    for (var i = 0; i < graph_scene.children.length; i++) {
       if ('isLine' in graph_scene.children[i]) {
         if (animation_line[arr] == undefined) {
           continue;
@@ -974,11 +975,12 @@ function animate() {
           arr += 1;
           continue;
         }
-        graph_scene.children[i + 1].position.set(
+      } else if ('isSphere' in graph_scene.children[i]) {
+        graph_scene.children[i].position.set(
           animation_line[arr][time].x,
           animation_line[arr][time].y,
           animation_line[arr][time].z);
-        plot_animate[arr] = (graph_scene.children[i + 1]);
+        plot_animate[arr] = (graph_scene.children[i]);
         arr += 1;
       }
     }
