@@ -345,7 +345,7 @@ function parseValue(value_str: string) {
     // console.log("negative", i);
     if (s[i[0]] == "-") {
       i[0]++; // "-"
-      ret = new Negative(leaf(s, i)); // leafと入れ替えると結果が変わる
+      ret = new Negative(leaf(s, i));
     } else {
       ret = leaf(s, i);
     }
