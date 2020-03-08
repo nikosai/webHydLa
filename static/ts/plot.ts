@@ -356,6 +356,25 @@ var phase;
 var vec;
 var vec_animation;
 
+// startPosからendPosまで幅scaledWidthの線をgeometryに追加
+var addCylinder = function (geometry: THREE.Geometry, startPos: THREE.Vector3, endPos: THREE.Vector3, scaledWidth: number) {
+  var directionVec = endPos.clone().sub(startPos);
+  var height = directionVec.length();
+  directionVec.normalize();
+  var cylinderMesh = new THREE.Mesh(new THREE.CylinderGeometry(scaledWidth, scaledWidth, height + scaledWidth, 8, 1));
+
+  var upVec = new THREE.Vector3(0, 1, 0);
+  var rotationAxis = upVec.clone().cross(directionVec).normalize();
+  var rotationAngle = Math.acos(upVec.dot(directionVec));
+
+  var newpos = startPos.clone().lerp(endPos, 0.5);
+  cylinderMesh.position.set(newpos.x, newpos.y, newpos.z);
+  cylinderMesh.setRotationFromAxisAngle(rotationAxis, rotationAngle);
+
+  cylinderMesh.updateMatrix();
+  geometry.merge(<any>cylinderMesh.geometry, cylinderMesh.matrix);
+};
+
 function add_plot_each(phase_index_stack: Stack<{ phase: Phase, index: number }>, axes: any, line: any, width: number, color: any, dt: number, parameter_condition_list: any, current_param_idx: number, current_line_vec: any) {
   try {
     while (true) {
@@ -378,42 +397,27 @@ function add_plot_each(phase_index_stack: Stack<{ phase: Phase, index: number }>
 
         var cylindersGeometry = new THREE.Geometry();
         var scaledWidth = 0.5 * width / graph_camera.zoom;
-        var addCylinder = function (startPos: any, endPos: any) {
-          var directionVec = endPos.clone().sub(startPos);
-          var height = directionVec.length();
-          directionVec.normalize();
-          var cylinderMesh = new THREE.Mesh(new THREE.CylinderGeometry(scaledWidth, scaledWidth, height + scaledWidth, 8, 1));
-
-          var upVec = new THREE.Vector3(0, 1, 0);
-          var rotationAxis = upVec.clone().cross(directionVec).normalize();
-          var rotationAngle = Math.acos(upVec.dot(directionVec));
-
-          var newpos = startPos.clone().lerp(endPos, 0.5);
-          cylinderMesh.position.set(newpos.x, newpos.y, newpos.z);
-          cylinderMesh.setRotationFromAxisAngle(rotationAxis, rotationAngle);
-
-          cylinderMesh.updateMatrix();
-          cylindersGeometry.merge(<any>cylinderMesh.geometry, cylinderMesh.matrix);
-        };
 
         var dottedLength = 10.0 / graph_camera.zoom;
         for (var i = 0; i + 1 < current_line_vec.length; i++) {
-          if ('isPP' in current_line_vec[i + 1]) {
+          if ('isPP' in current_line_vec[i + 1]) { // PP
             var posBegin = current_line_vec[i];
             var posEnd = current_line_vec[i + 1];
             var directionVec = posEnd.clone().sub(posBegin);
             var lineLength = directionVec.length();
             directionVec.normalize();
             var numOfDots = lineLength / dottedLength;
-            for (var j = 1; j + 1 < numOfDots; j += 2) {
+            for (var j = 1; j + 1 < numOfDots; j += 2) { // 点線の各点を追加
               addCylinder(
+                cylindersGeometry,
                 posBegin.clone().add(directionVec.clone().multiplyScalar(j * dottedLength)),
-                posBegin.clone().add(directionVec.clone().multiplyScalar((j + 1) * dottedLength))
+                posBegin.clone().add(directionVec.clone().multiplyScalar((j + 1) * dottedLength)),
+                scaledWidth
               );
             }
           }
-          else if (!current_line_vec[i].equals(current_line_vec[i + 1])) {
-            addCylinder(current_line_vec[i], current_line_vec[i + 1]);
+          else if (!current_line_vec[i].equals(current_line_vec[i + 1])) { // IPの各折れ線を追加
+            addCylinder(cylindersGeometry, current_line_vec[i], current_line_vec[i + 1], scaledWidth);
           }
         }
 
@@ -430,12 +434,15 @@ function add_plot_each(phase_index_stack: Stack<{ phase: Phase, index: number }>
         if (animation_line.maxlen < current_line_vec_animation.length) {
           animation_line.maxlen = current_line_vec_animation.length;
         }
+
+        // 動く点
         s_geometry = new THREE.SphereGeometry(0.1);
         s_material = new THREE.MeshBasicMaterial({ color: color[current_param_idx] });
         sphere = new THREE.Mesh(s_geometry, s_material);
         sphere.position.set(0, 0, 0);
         graph_scene.add(sphere);
         plot_animate[array] = (sphere);
+
         current_line_vec = [];
         current_line_vec_animation = [];
         phase_index_stack.pop();
@@ -621,7 +628,7 @@ function phase_to_line_vectors(phase: Phase, parameter_condition_list: Env, axis
   return line;
 }
 
-function vector3_to_geometry(vector3_list: any) {
+function vector3_to_geometry(vector3_list: THREE.Vector3[]) {
   var geometry = new THREE.Geometry();
   for (var i = 0; i < vector3_list.length; i++) {
     geometry.vertices.push(vector3_list[i]);
@@ -692,8 +699,8 @@ function remove_mesh(line: any) {
 
 
 
-function toUnitVector(vector: any) {
-  var unit_vector: any;
+function toUnitVector(vector: THREE.Vector3) {
+  var unit_vector = new THREE.Vector3;
   var length = Math.sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
   unit_vector.x = vector.x / length;
   unit_vector.y = vector.y / length;
