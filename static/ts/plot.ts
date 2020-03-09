@@ -346,8 +346,8 @@ function plot_ready(line: any) {
   }
 }
 
-var animation_line: any = [];
-var current_line_vec_animation: any = [];
+var animation_line: any = []; // ボールの軌道のリスト
+var current_line_vec_animation: any = [];　// あるボールの軌道
 var s_geometry;
 var s_material;
 var sphere;
@@ -390,7 +390,7 @@ function add_plot_each(phase_index_stack: Stack<{ phase: Phase, index: number }>
       phase = phase_index.phase; // pop phase
       vec = phase_to_line_vectors(phase, parameter_condition_list[current_param_idx], axes, dt);
       current_line_vec = current_line_vec.concat(vec);
-      vec_animation = phase_to_line_vectors(phase, parameter_condition_list[current_param_idx], axes, 0.01);
+      vec_animation = phase_to_line_vectors(phase, parameter_condition_list[current_param_idx], axes, 0.01); // tを0.01刻みで点を取る -> time = t * 100
       current_line_vec_animation = current_line_vec_animation.concat(vec_animation);
       if (phase.children.length == 0) { // on leaves
         array += 1;
@@ -601,7 +601,7 @@ function hue2rgb(h: number) {
 
 
 function phase_to_line_vectors(phase: Phase, parameter_condition_list: Env, axis: any, maxDeltaT: number) {
-  var line: any = [];
+  var line: any = []; // 基本的にTHREE.Vector3[]
   var t;
   if (phase.simulation_state != "SIMULATED" && phase.simulation_state != "TIME_LIMIT" && phase.simulation_state != "STEP_LIMIT") return line;
 
@@ -948,20 +948,20 @@ function update_axes(force: boolean) {
 
 var arr = 0;
 var time_prev = -100;
-function animate() {
+function animate() { // ボール描画用
   if (time_prev != time) {
     plot_animate = [];
     arr = 0;
     for (var i = 0; i < graph_scene.children.length; i++) {
-      if ('isLine' in graph_scene.children[i]) {
-        if (animation_line[arr] == undefined) {
-          continue;
-        }
-        if (time > animation_line.maxlen - 1) {
-          time = 0;
-        }
+      if (animation_line[arr] == undefined) {
+        continue;
+      }
+      if (time > animation_line.maxlen - 1) {
+        time = 0;
+      }
+      if ('isSphere' in graph_scene.children[i]) {
         if (time == 0) {
-          graph_scene.children[i + 1].material.color.set(
+          graph_scene.children[i].material.color.set(
             animation_line[arr].color
           );
         }
@@ -971,11 +971,10 @@ function animate() {
             198,
             198
           );
-          plot_animate[arr] = (graph_scene.children[i + 1]);
+          plot_animate[arr] = (graph_scene.children[i]);
           arr += 1;
           continue;
         }
-      } else if ('isSphere' in graph_scene.children[i]) {
         graph_scene.children[i].position.set(
           animation_line[arr][time].x,
           animation_line[arr][time].y,
