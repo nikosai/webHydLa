@@ -4,19 +4,8 @@
 1. 次を実行．  
   Execute a following command.  
     ```
-    /webHydLa/static$ npm install --save-dev typescript ts-node @types/three @types/jquery @types/ace @types/dat-gui
-    npm WARN deprecated @types/three@0.103.2: This is a stub types definition. three provides its own type definitions, so you do not need this installed.
-    npm WARN deprecated @types/dat-gui@0.6.3: '@types/dat-gui' is now '@types/dat.gui'
-    npm WARN static@1.0.0 No repository field.
-
-    + @types/jquery@3.3.33
-    + ts-node@8.6.2
-    + typescript@3.8.3
-    + @types/three@0.103.2
-    + @types/dat-gui@0.6.3
-    + @types/ace@0.0.42
-    added 15 packages from 67 contributors and audited 15 packages in 3.203s
-    found 0 vulnerabilities
+    /webHydLa/static$ npm install --save-dev typescript ts-node ts-loader webpack webpack-cli @types/ace @types/dat.gui @types/jquery @types/three
+    /webHydLa/static$ npm install --save ace dat.gui jquery materialize-css three three-orbitcontrols-ts
     ```
 
 ## トランスパイル (Transpile)
